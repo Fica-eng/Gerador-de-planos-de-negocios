@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Plano de Negócio com IA</title>
+<meta name="description" content="Cria o teu plano de negócio profissional em segundos com Inteligência Artificial. Grátis e fácil de usar.">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c27;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --text: #f0ede8;
+    --muted: #7a7a8c;
+    --accent: #3a7bd5;
+    --success: #2ecc71;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(58,123,213,0.06) 0%, transparent 50%);
+    animation: bgPulse 8s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes bgPulse {
+    0% { transform: scale(1) rotate(0deg); }
+    100% { transform: scale(1.1) rotate(3deg); }
+  }
+
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold-light);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-bottom: 20px;
+  }
+
+  .badge::before { content: '✦'; font-size: 10px; }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 6vw, 52px);
+    font-weight: 900;
+    line-height: 1.1;
+    background: linear-gradient(135deg, var(--gold-light) 0%, var(--text) 50%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 14px;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.6;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 36px;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    transition: color 0.3s;
+  }
+
+  .step.active { color: var(--gold-light); }
+  .step.done { color: var(--success); }
+
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    transition: all 0.3s;
+  }
+
+  .step.active .step-num { background: var(--gold); border-color: var(--gold); color: #000; }
+  .step.done .step-num { background: var(--success); border-color: var(--success); color: #fff; }
+  .step.done .step-done-icon { display: inline; }
+  .step-done-icon { display: none; }
+  .step.done .step-num-text { display: none; }
+
+  .step-line { width: 40px; height: 1px; background: var(--surface2); margin: 0 4px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 36px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.8s 0.3s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent);
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold-light);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title span { font-size: 20px; }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  input, select, textarea {
+    background: var(--surface2);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 12px 16px;
+    outline: none;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: rgba(201,168,76,0.5);
+    background: rgba(201,168,76,0.04);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.08);
+  }
+
+  select option { background: #1c1c27; }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+
+  .btn-generate {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, var(--gold) 0%, #a87930 100%);
+    border: none;
+    border-radius: var(--radius);
+    color: #000;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-generate::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-generate:hover::before { left: 100%; }
+  .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(201,168,76,0.3); }
+  .btn-generate:active { transform: translateY(0); }
+  .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .loading-bar { height: 3px; background: var(--surface2); border-radius: 999px; overflow: hidden; margin-top: 16px; display: none; }
+  .loading-bar.active { display: block; }
+  .loading-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-light)); border-radius: 999px; animation: loadingAnim 2s ease-in-out infinite; }
+
+  @keyframes loadingAnim {
+    0% { width: 0%; margin-left: 0%; }
+    50% { width: 70%; margin-left: 15%; }
+    100% { width: 0%; margin-left: 100%; }
+  }
+
+  .loading-text { text-align: center; color: var(--muted); font-size: 13px; margin-top: 12px; display: none; }
+  .loading-text.active { display: block; animation: pulse 1.5s ease-in-out infinite; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  .output-section { display: none; animation: fadeUp 0.6s ease both; }
+  .output-section.visible { display: block; }
+
+  .output-card {
+    background: var(--surface);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 20px;
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .output-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+  }
+
+  .output-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .output-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gold-light);
+  }
+
+  .btn-copy {
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold-light);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-copy:hover { background: rgba(201,168,76,0.22); }
+
+  .output-content {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text);
+  }
+
+  .output-content h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    color: var(--gold-light);
+    margin: 24px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+  }
+
+  .output-content h3 { font-size: 14px; font-weight: 600; color: var(--text); margin: 16px 0 6px; }
+  .output-content ul { padding-left: 20px; margin: 8px 0; }
+  .output-content li { margin-bottom: 4px; }
+  .output-content strong { color: var(--gold-light); }
+  .output-content p { margin-bottom: 10px; }
+
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .card, .output-card { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="badge">Powered by IA · Grátis</div>
+    <h1>Gerador de Plano<br>de Negócio</h1>
+    <p class="subtitle">Responde às perguntas abaixo e a Inteligência Artificial cria o teu plano profissional em segundos — pronto para apresentar a investidores ou bancos.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step active" id="step1-indicator">
+      <div class="step-num"><span class="step-num-text">1</span><span class="step-done-icon">✓</span></div>
+      <span>Dados</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="step2-indicator">
+      <div class="step-num"><span class="step-num-text">2</span><span class="step-done-icon">✓</span></div>
+      <span>Negócio</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="step3-indicator">
+      <div class="step-num"><span class="step-num-text">3</span><span class="step-done-icon">✓</span></div>
+      <span>Plano</span>
+    </div>
+  </div>
+
+  <div class="card" id="formCard">
+    <div class="section-title"><span>📋</span> Informações Básicas</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nome do Negócio *</label>
+        <input type="text" id="nomeNegocio" placeholder="Ex: TechMoz Soluções">
+      </div>
+      <div class="form-group">
+        <label>Setor / Indústria *</label>
+        <select id="setor">
+          <option value="">Selecionar setor...</option>
+          <option>Tecnologia e Inovação</option>
+          <option>Comércio e Retalho</option>
+          <option>Alimentação e Restauração</option>
+          <option>Agricultura e Agronegócio</option>
+          <option>Saúde e Bem-estar</option>
+          <option>Educação e Formação</option>
+          <option>Construção e Imobiliário</option>
+          <option>Transporte e Logística</option>
+          <option>Serviços Financeiros</option>
+          <option>Turismo e Hotelaria</option>
+          <option>Moda e Vestuário</option>
+          <option>Outro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nome do Empreendedor *</label>
+        <input type="text" id="nomeEmpreendedor" placeholder="Ex: João Silva">
+      </div>
+      <div class="form-group">
+        <label>País / Cidade</label>
+        <input type="text" id="pais" placeholder="Ex: Moçambique, Maputo">
+      </div>
+      <div class="form-group full">
+        <label>Descrição do Produto ou Serviço *</label>
+        <textarea id="descricao" placeholder="Descreve o que vais vender, como funciona, e o que torna o teu produto ou serviço diferente..."></textarea>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:28px"><span>💰</span> Mercado e Finanças</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Público-Alvo *</label>
+        <input type="text" id="publicoAlvo" placeholder="Ex: Pequenas empresas, jovens 18-35">
+      </div>
+      <div class="form-group">
+        <label>Investimento Inicial Previsto</label>
+        <input type="text" id="investimento" placeholder="Ex: 50.000 MZN">
+      </div>
+      <div class="form-group">
+        <label>Fase do Negócio</label>
+        <select id="fase">
+          <option value="">Selecionar...</option>
+          <option>Ideia (ainda não lancei)</option>
+          <option>Em desenvolvimento</option>
+          <option>Já em operação</option>
+          <option>A escalar</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Principais Concorrentes</label>
+        <input type="text" id="concorrentes" placeholder="Ex: Empresa X, loja Y (ou 'Não sei')">
+      </div>
+      <div class="form-group full">
+        <label>Objetivo Principal</label>
+        <textarea id="objetivo" style="min-height:70px" placeholder="Ex: Faturar 100.000 MZN no primeiro ano, criar 5 empregos, expandir para 3 províncias..."></textarea>
+      </div>
+    </div>
+
+    <div style="margin-top:28px">
+      <button class="btn-generate" id="btnGenerate" onclick="gerarPlano()">
+        <span>✦</span> Gerar o Meu Plano de Negócio
+      </button>
+      <div class="loading-bar" id="loadingBar"><div class="loading-bar-fill"></div></div>
+      <div class="loading-text" id="loadingText">⚡ A IA está a construir o teu plano personalizado...</div>
+    </div>
+  </div>
+
+  <div class="output-section" id="outputSection">
+    <div class="output-card">
+      <div class="output-header">
+        <div class="output-title">📄 O Teu Plano de Negócio</div>
+        <button class="btn-copy" onclick="copiarPlano()">⎘ Copiar Plano</button>
+      </div>
+      <div class="output-content" id="outputContent"></div>
+    </div>
+    <div style="margin-top:16px; text-align:center">
+      <button class="btn-generate" style="max-width:300px; background: rgba(255,255,255,0.06); color: var(--text); font-weight:500" onclick="novoPlano()">
+        ↺ Criar Novo Plano
+      </button>
+    </div>
+  </div>
+
+  <div class="footer">
+    Powered by <strong style="color:var(--gold)">Inteligência Artificial</strong> · Feito para empreendedores africanos 🌍
+  </div>
+
+</div>
+
+<script>
+async function gerarPlano() {
+  const nomeNegocio = document.getElementById('nomeNegocio').value.trim();
+  const setor = document.getElementById('setor').value;
+  const nomeEmpreendedor = document.getElementById('nomeEmpreendedor').value.trim();
+  const pais = document.getElementById('pais').value.trim();
+  const descricao = document.getElementById('descricao').value.trim();
+  const publicoAlvo = document.getElementById('publicoAlvo').value.trim();
+  const investimento = document.getElementById('investimento').value.trim();
+  const fase = document.getElementById('fase').value;
+  const concorrentes = document.getElementById('concorrentes').value.trim();
+  const objetivo = document.getElementById('objetivo').value.trim();
+
+  if (!nomeNegocio || !setor || !nomeEmpreendedor || !descricao || !publicoAlvo) {
+    alert('Por favor, preenche os campos obrigatórios (marcados com *).');
+    return;
+  }
+
+  document.getElementById('btnGenerate').disabled = true;
+  document.getElementById('loadingBar').classList.add('active');
+  document.getElementById('loadingText').classList.add('active');
+  document.getElementById('step1-indicator').classList.add('done');
+  document.getElementById('step1-indicator').classList.remove('active');
+  document.getElementById('step2-indicator').classList.add('active');
+
+  const prompt = `Cria um plano de negócio profissional e completo em Português para o seguinte empreendimento:
+
+Dados:
+- Nome do negócio: ${nomeNegocio}
+- Empreendedor: ${nomeEmpreendedor}
+- Setor: ${setor}
+- Localização: ${pais || 'Moçambique'}
+- Fase atual: ${fase || 'Não especificado'}
+
+Negócio:
+- Produto/Serviço: ${descricao}
+- Público-alvo: ${publicoAlvo}
+- Investimento previsto: ${investimento || 'A definir'}
+- Concorrentes: ${concorrentes || 'A pesquisar'}
+- Objetivo principal: ${objetivo || 'Crescimento sustentável'}
+
+Estrutura o plano com as seguintes secções usando markdown com títulos ## e ###:
+1. Resumo Executivo
+2. Descrição do Negócio
+3. Análise de Mercado
+4. Análise da Concorrência
+5. Estratégia de Marketing e Vendas
+6. Plano Operacional
+7. Plano Financeiro (estimativas de receita, custos, ponto de equilíbrio)
+8. Riscos e Mitigação
+9. Próximos Passos (plano de ação para os primeiros 90 dias)
+
+Escreve de forma profissional, prática e motivadora. Adapta ao contexto africano/moçambicano onde relevante.`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content?.[0]?.text || "Erro ao gerar o plano. Tenta novamente.";
+    const html = renderMarkdown(text);
+
+    document.getElementById('outputContent').innerHTML = html;
+    document.getElementById('outputContent').setAttribute('data-raw', text);
+    document.getElementById('outputSection').classList.add('visible');
+    document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    document.getElementById('step2-indicator').classList.add('done');
+    document.getElementById('step2-indicator').classList.remove('active');
+    document.getElementById('step3-indicator').classList.add('done');
+
+  } catch (err) {
+    alert('Erro de ligação. Verifica a tua internet e tenta novamente.');
+    console.error(err);
+  } finally {
+    document.getElementById('btnGenerate').disabled = false;
+    document.getElementById('loadingBar').classList.remove('active');
+    document.getElementById('loadingText').classList.remove('active');
+  }
+}
+
+function renderMarkdown(text) {
+  let html = text
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>)(\n<li>)/g, '$1$2');
+  
+  html = html.replace(/(<li>.*<\/li>\n?)+/g, m => '<ul>' + m + '</ul>');
+  
+  const lines = html.split('\n');
+  const result = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    if (trimmed.startsWith('<h2>') || trimmed.startsWith('<h3>') || trimmed.startsWith('<ul>') || trimmed.startsWith('<li>')) {
+      result.push(trimmed);
+    } else {
+      result.push('<p>' + trimmed + '</p>');
+    }
+  }
+  return result.join('\n');
+}
+
+function copiarPlano() {
+  const raw = document.getElementById('outputContent').getAttribute('data-raw') || document.getElementById('outputContent').innerText;
+  navigator.clipboard.writeText(raw).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = '✓ Copiado!';
+    setTimeout(() => btn.textContent = '⎘ Copiar Plano', 2000);
+  });
+}
+
+function novoPlano() {
+  document.getElementById('outputSection').classList.remove('visible');
+  document.getElementById('step1-indicator').classList.add('active');
+  document.getElementById('step1-indicator').classList.remove('done');
+  document.getElementById('step2-indicator').classList.remove('done', 'active');
+  document.getElementById('step3-indicator').classList.remove('done', 'active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
